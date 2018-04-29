@@ -14,10 +14,11 @@
 #include <string.h>
 #include <png.h>
 
+// testing reload
 
 // This takes the float value 'val', converts it to red, green & blue values, then 
 // sets those values into the image memory buffer location pointed to by 'ptr'
-void setRGB(png_byte *ptr, float val)
+void set_rgb(png_byte *ptr, float val)
 {
    int v = (int)(val * 767);
    if (v < 0) v = 0;
@@ -101,7 +102,7 @@ int writeImage(char* filename, int width, int height, float *buffer, char* title
    int x, y;
    for (y=0 ; y<height ; y++) {
       for (x=0 ; x<width ; x++) {
-         setRGB(&(row[x*3]), buffer[y*width + x]);
+         set_rgb(&(row[x*3]), buffer[y*width + x]);
       }
       png_write_row(png_ptr, row);
    }
