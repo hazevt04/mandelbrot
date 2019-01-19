@@ -38,7 +38,7 @@ void set_rgb(png_byte *ptr, float val)
 
 // This function actually writes out the PNG image file. The string 'title' is
 // also written into the image file
-int writeImage(char* filename, int width, int height, float *buffer, char* title)
+int write_image(char* filename, int width, int height, float *buffer, char* title)
 {
    int code = 0;
    FILE *fp = NULL;
@@ -120,7 +120,7 @@ int writeImage(char* filename, int width, int height, float *buffer, char* title
 }
 
 // Creates a test image for saving. Creates a Mandelbrot Set fractal of size width x height
-float *createMandelbrotImage(int width, int height, float xS, float yS, float rad, int maxIteration)
+float *create_mandelbrot_image(int width, int height, float xS, float yS, float rad, int max_iterations)
 {
    float *buffer = (float *) malloc(width * height * sizeof(float));
    if (buffer == NULL) {
@@ -130,23 +130,23 @@ float *createMandelbrotImage(int width, int height, float xS, float yS, float ra
 
    // Create Mandelbrot set image
 
-   int xPos, yPos;
-   float minMu = maxIteration;
-   float maxMu = 0;
+   int x_pos, y_pos;
+   float min_mu = max_iterations;
+   float max_mu = 0;
 
-   for (yPos=0 ; yPos<height ; yPos++)
+   for (y_pos=0 ; y_pos<height ; y_pos++)
    {
-      float yP = (yS-rad) + (2.0f*rad/height)*yPos;
+      float yP = (yS-rad) + (2.0f*rad/height)*y_pos;
 
-      for (xPos=0 ; xPos<width ; xPos++)
+      for (x_pos=0 ; x_pos<width ; x_pos++)
       {
-         float xP = (xS-rad) + (2.0f*rad/width)*xPos;
+         float xP = (xS-rad) + (2.0f*rad/width)*x_pos;
 
          int iteration = 0;
          float x = 0;
          float y = 0;
 
-         while (x*x + y*y <= 4 && iteration < maxIteration)
+         while (x*x + y*y <= 4 && iteration < max_iterations)
          {
             float tmp = x*x - y*y + xP;
             y = 2*x*y + yP;
@@ -154,15 +154,15 @@ float *createMandelbrotImage(int width, int height, float xS, float yS, float ra
             iteration++;
          }
 
-         if (iteration < maxIteration) {
+         if (iteration < max_iterations) {
             float modZ = sqrt(x*x + y*y);
             float mu = iteration - (log(log(modZ))) / log(2);
-            if (mu > maxMu) maxMu = mu;
-            if (mu < minMu) minMu = mu;
-            buffer[yPos * width + xPos] = mu;
+            if (mu > max_mu) max_mu = mu;
+            if (mu < min_mu) min_mu = mu;
+            buffer[y_pos * width + x_pos] = mu;
          }
          else {
-            buffer[yPos * width + xPos] = 0;
+            buffer[y_pos * width + x_pos] = 0;
          }
       }
    }
@@ -171,7 +171,7 @@ float *createMandelbrotImage(int width, int height, float xS, float yS, float ra
    int count = width * height;
    while (count) {
       count --;
-      buffer[count] = (buffer[count] - minMu) / (maxMu - minMu);
+      buffer[count] = (buffer[count] - min_mu) / (max_mu - min_mu);
    }
 
    return buffer;
@@ -185,8 +185,7 @@ void usage( char * pname ) {
 
 
 
-int main( int argc, char *argv[] )
-{
+int main( int argc, char *argv[] ) {
    // Make sure that the output filename argument has been provided
    if (argc < 5) {
       usage(argv[0]);
@@ -198,27 +197,35 @@ int main( int argc, char *argv[] )
    int height;
    int max_iterations;
    char* endptr = NULL;
-   char outfilename[256];
+   char out_filename[256];
 
    width = strtol( argv[1], &endptr, 10 );
    height = strtol( argv[2], &endptr, 10 );
    max_iterations = strtol( argv[3], &endptr, 10 );
-   strcpy( outfilename, argv[4] );
+   strcpy( out_filename, argv[4] );
 
    // Create a test image - in this case a Mandelbrot Set fractal
    // The output is a 1D array of floats, length: width * height
    printf("Creating Image\n");
-   //float *buffer = createMandelbrotImage(width, height, -0.802, -0.177, 0.011, 110);
-   float *buffer = createMandelbrotImage(width, height, 
-      -0.802, -0.177, 0.011, max_iterations);
-   if (buffer == NULL) {
+
+   float xS = -0.802;
+   float yS = -0.177;
+   float rad = 0.011;
+
+   //float *buffer = create_mandelbrot_image(width, height, 
+   // xS      yS      rad    max_iterations  
+   // -0.802, -0.177, 0.011, 110);
+   float *buffer = create_mandelbrot_image(width, height, xS, yS, 
+      rad, max_iterations);
+
+   if (!buffer) {
       return 1;
    }
 
    // Save the image to a PNG file
    // The 'title' string is stored as part of the PNG file
    printf("Saving PNG\n");
-   int result = writeImage(outfilename, width, height, buffer, 
+   int result = write_image(out_filename, width, height, buffer, 
       "This is my test image");
 
    // Free up the memorty used to store the image
